@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased](https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.1...HEAD)
+## [Unreleased](https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.2...HEAD)
+
+## [v2.3.2](https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.1...v2.3.2) - 2026-01-21
+
+### What's Changed
+
+* Updated AudioPlayerService.java so app is opened from notifications bar by @tarikhadd in https://github.com/mediagrid/capacitor-native-audio/pull/55
+
+**Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.1...v2.3.2
 
 ## [v2.3.1](https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.0...v2.3.1) - 2025-09-10
 
