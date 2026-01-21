@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 
-* Updated AudioPlayerService.java so app is opened from notifications bar by @tarikhadd in https://github.com/mediagrid/capacitor-native-audio/pull/55
+- Android: Update so app opens when tapping on media session in the notification bar by @tarikhadd in https://github.com/mediagrid/capacitor-native-audio/pull/55
 
 **Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.1...v2.3.2
 
@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 
-* fix: improve on end detection for iOS by @pejota14 in https://github.com/mediagrid/capacitor-native-audio/pull/47
+- fix: improve on end detection for iOS by @pejota14 in https://github.com/mediagrid/capacitor-native-audio/pull/47
 
 **Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.0...v2.3.1
 
@@ -24,9 +24,9 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 
-* feat: Add ability to configure seek time by @pejota14 in https://github.com/mediagrid/capacitor-native-audio/pull/44
-* Bump Android Media3 library to [v1.8.0](https://github.com/androidx/media/releases/tag/1.8.0) by @wsamoht  in [24564fe](https://github.com/mediagrid/capacitor-native-audio/commit/24564fe90cd163c19b3999ec47c9cd37c660e62a)
-* example: Upgrade to Vite v7 by @wsamoht in [85bbc18](https://github.com/mediagrid/capacitor-native-audio/commit/85bbc18e49b60ce37d82b43b0090cbc221edc2d9)
+- feat: Add ability to configure seek time by @pejota14 in https://github.com/mediagrid/capacitor-native-audio/pull/44
+- Bump Android Media3 library to [v1.8.0](https://github.com/androidx/media/releases/tag/1.8.0) by @wsamoht in [24564fe](https://github.com/mediagrid/capacitor-native-audio/commit/24564fe90cd163c19b3999ec47c9cd37c660e62a)
+- example: Upgrade to Vite v7 by @wsamoht in [85bbc18](https://github.com/mediagrid/capacitor-native-audio/commit/85bbc18e49b60ce37d82b43b0090cbc221edc2d9)
 
 **Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.2.0...v2.3.0
 
@@ -34,8 +34,8 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 
-* feat: Add metadata update via URL on an interval by @wsamoht in https://github.com/mediagrid/capacitor-native-audio/pull/25
-* example: Improve play status and change Vite default port
+- feat: Add metadata update via URL on an interval by @wsamoht in https://github.com/mediagrid/capacitor-native-audio/pull/25
+- example: Improve play status and change Vite default port
 
 **Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.1.1...v2.2.0
 
