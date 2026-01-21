@@ -1,5 +1,6 @@
 package us.mediagrid.capacitorjs.plugins.nativeaudio;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -24,6 +25,16 @@ public class AudioPlayerService extends MediaSessionService {
         Log.i(TAG, "Service being created");
         super.onCreate();
 
+        String packageName = getApplicationContext().getPackageName();
+        Intent sessionActivityIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+
+        PendingIntent sessionActivityPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            sessionActivityIntent,
+            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
         ExoPlayer player = new ExoPlayer.Builder(this)
             .setAudioAttributes(
                 new AudioAttributes.Builder()
@@ -37,6 +48,7 @@ public class AudioPlayerService extends MediaSessionService {
         player.setPlayWhenReady(false);
         mediaSession = new MediaSession.Builder(this, player)
             .setCallback(new MediaSessionCallback(this))
+            .setSessionActivity(sessionActivityPendingIntent)
             .build();
     }
 
