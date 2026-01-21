@@ -307,8 +307,10 @@ public class AudioPlayerPlugin extends Plugin {
 
             postToLooper("getCurrentTime", call, () -> {
                 call.resolve(
-                    new JSObject()
-                        .put("currentTime", audioSources.get(audioId(call)).getCurrentTime())
+                    new JSObject().put(
+                        "currentTime",
+                        audioSources.get(audioId(call)).getCurrentTime()
+                    )
                 );
             });
         } catch (Exception ex) {
