@@ -8,9 +8,8 @@ All notable changes to this project will be documented in this file.
 
 ### What's Changed
 
-* Upgrade to Capacitor 8 by @wsamoht in https://github.com/mediagrid/capacitor-native-audio/pull/56
-* - Bump Android Media3 library to [v1.9.0](https://github.com/androidx/media/releases/tag/1.9.0) by @wsamoht in [eca25c5](https://github.com/mediagrid/capacitor-native-audio/commit/eca25c513e36a8f23e548a8bc26d06d5f1cb299e)
-  
+- Upgrade to Capacitor 8 by @wsamoht in https://github.com/mediagrid/capacitor-native-audio/pull/56
+- Bump Android Media3 library to [v1.9.0](https://github.com/androidx/media/releases/tag/1.9.0) by @wsamoht in [eca25c5](https://github.com/mediagrid/capacitor-native-audio/commit/eca25c513e36a8f23e548a8bc26d06d5f1cb299e)
 
 **Full Changelog**: https://github.com/mediagrid/capacitor-native-audio/compare/v2.3.2...v3.0.0
 
