@@ -23,6 +23,7 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
     public static final String SET_AUDIO_SOURCES = "SetAudioSources";
     public static final String CREATE_PLAYER = "CreatePlayer";
     private static final String EXTRA_IS_LOGGED_IN = "isLoggedIn";
+    public static final String SET_LOGIN_STATE = "SetLoginState";
     private static final String ROOT_ID = "root";
     private static final String NODE_SERIES = "root/series";
     private static final String NODE_CONTINUE = "root/continue";
@@ -60,13 +61,16 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         Bundle args
     ) {
         if (customCommand.customAction.equals(SET_AUDIO_SOURCES)) {
-            Bundle audioSouresBundle = new Bundle();
-            audioSouresBundle.putBinder(
-                "audioSources",
-                customCommand.customExtras.getBinder("audioSources")
+            Bundle extras = new Bundle();
+            extras.putBinder("audioSources", customCommand.customExtras.getBinder("audioSources"));
+            updateSessionExtras(session, extras);
+        } else if (customCommand.customAction.equals(SET_LOGIN_STATE)) {
+            Bundle extras = new Bundle();
+            extras.putBoolean(
+                EXTRA_IS_LOGGED_IN,
+                customCommand.customExtras.getBoolean(EXTRA_IS_LOGGED_IN, false)
             );
-
-            session.setSessionExtras(audioSouresBundle);
+            updateSessionExtras(session, extras);
         } else if (customCommand.customAction.equals(CREATE_PLAYER)) {
             AudioSource source = (AudioSource) customCommand.customExtras.getBinder("audioSource");
             source.initialize(audioService);
@@ -189,5 +193,12 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
                     .build()
             )
             .build();
+    }
+
+    private void updateSessionExtras(MediaLibrarySession session, Bundle extras) {
+        Bundle current = session.getSessionExtras();
+        Bundle merged = new Bundle(current != null ? current : Bundle.EMPTY);
+        merged.putAll(extras);
+        session.setSessionExtras(merged);
     }
 }

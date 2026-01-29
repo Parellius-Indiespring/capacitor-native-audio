@@ -263,6 +263,46 @@ public class AudioPlayerPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void setAutoLoginState(PluginCall call) {
+        try {
+            boolean isLoggedIn = call.getBoolean("isLoggedIn", false);
+
+            initializeMediaController("setAutoLoginState", call, () -> {
+                Bundle extras = new Bundle();
+                extras.putBoolean("isLoggedIn", isLoggedIn);
+
+                ListenableFuture<SessionResult> commandResult =
+                    audioMediaController.sendCustomCommand(
+                        new SessionCommand(
+                            MediaSessionCallback.SET_LOGIN_STATE,
+                            extras
+                        ),
+                        new Bundle()
+                    );
+
+                commandResult.addListener(
+                    () -> {
+                        try {
+                            SessionResult result = commandResult.get();
+
+                            if (result.resultCode == SessionResult.RESULT_SUCCESS) {
+                                call.resolve();
+                            } else {
+                                call.reject("Failed to set auto login state.");
+                            }
+                        } catch (Exception ex) {
+                            call.reject("Failed to set auto login state.", ex);
+                        }
+                    },
+                    MoreExecutors.directExecutor()
+                );
+            });
+        } catch (Exception ex) {
+            call.reject("There was an issue setting auto login state.", ex);
+        }
+    }
+
+    @PluginMethod
     public void updateMetadata(PluginCall call) {
         try {
             if (!audioSourceExists("updateMetadata", call)) {
