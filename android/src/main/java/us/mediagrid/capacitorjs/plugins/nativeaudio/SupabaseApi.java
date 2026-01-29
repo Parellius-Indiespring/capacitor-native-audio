@@ -89,6 +89,48 @@ public class SupabaseApi {
         return results;
     }
 
+    public List<AutoEpisode> fetchSeriesEpisodes(String playlistId, int limit) throws Exception {
+        AutoAuthConfig config = AutoAuthStore.load(context);
+        if (config == null || !config.isValid()) {
+            return new ArrayList<>();
+        }
+
+        Uri uri = Uri.parse(config.supabaseUrl)
+            .buildUpon()
+            .appendEncodedPath("rest/v1/playlist_items")
+            .appendQueryParameter(
+                "select",
+                "id,sort_order,episodes(id,title,summary,image_url,audio_url,podcasts(title,image_url))"
+            )
+            .appendQueryParameter("playlist_id", "eq." + playlistId)
+            .appendQueryParameter("order", "sort_order.asc")
+            .appendQueryParameter("limit", String.valueOf(limit))
+            .build();
+
+        JSONArray rows = fetchJsonArray(uri.toString(), config);
+        List<AutoEpisode> results = new ArrayList<>();
+        for (int i = 0; i < rows.length(); i++) {
+            JSONObject row = rows.getJSONObject(i);
+            JSONObject episode = row.optJSONObject("episodes");
+            if (episode == null) {
+                continue;
+            }
+            JSONObject podcast = episode.optJSONObject("podcasts");
+            results.add(
+                new AutoEpisode(
+                    episode.optString("id"),
+                    episode.optString("title"),
+                    episode.optString("summary"),
+                    episode.optString("image_url"),
+                    episode.optString("audio_url"),
+                    podcast != null ? podcast.optString("title") : null,
+                    podcast != null ? podcast.optString("image_url") : null
+                )
+            );
+        }
+        return results;
+    }
+
     private JSONArray fetchJsonArray(String urlString, AutoAuthConfig config) throws Exception {
         HttpURLConnection connection = (HttpURLConnection) new URL(urlString).openConnection();
         connection.setRequestMethod("GET");

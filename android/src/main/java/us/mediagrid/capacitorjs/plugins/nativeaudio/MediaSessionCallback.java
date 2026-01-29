@@ -162,6 +162,11 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
             return fetchSeriesItems(params);
         }
 
+        if (parentId != null && parentId.startsWith("series/")) {
+            String seriesId = parentId.substring("series/".length());
+            return fetchSeriesEpisodes(seriesId, params);
+        }
+
         if (NODE_EPISODES.equals(parentId)) {
             return fetchLatestEpisodes(params);
         }
@@ -253,6 +258,52 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
             try {
                 SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
                 List<SupabaseApi.AutoEpisode> episodes = api.fetchLatestEpisodes(DEFAULT_PAGE_SIZE);
+                ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
+                for (SupabaseApi.AutoEpisode episode : episodes) {
+                    MediaMetadata.Builder metadata = new MediaMetadata.Builder()
+                        .setTitle(episode.title)
+                        .setSubtitle(
+                            episode.podcastTitle != null && !episode.podcastTitle.isEmpty()
+                                ? episode.podcastTitle
+                                : "Goalhanger"
+                        )
+                        .setIsBrowsable(false)
+                        .setIsPlayable(true);
+
+                    String artwork = episode.imageUrl != null && !episode.imageUrl.isEmpty()
+                        ? episode.imageUrl
+                        : episode.podcastImageUrl;
+                    if (artwork != null && !artwork.isEmpty()) {
+                        metadata.setArtworkUri(Uri.parse(artwork));
+                    }
+
+                    MediaItem.Builder itemBuilder = new MediaItem.Builder()
+                        .setMediaId("episode/" + episode.id)
+                        .setMediaMetadata(metadata.build());
+
+                    if (episode.audioUrl != null && !episode.audioUrl.isEmpty()) {
+                        itemBuilder.setUri(Uri.parse(episode.audioUrl));
+                    }
+
+                    items.add(itemBuilder.build());
+                }
+                future.set(LibraryResult.ofItemList(items.build(), params));
+            } catch (Exception ex) {
+                future.set(LibraryResult.ofError(LibraryResult.RESULT_ERROR_IO));
+            }
+        });
+        return future;
+    }
+
+    private ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> fetchSeriesEpisodes(
+        String seriesId,
+        @Nullable LibraryParams params
+    ) {
+        SettableFuture<LibraryResult<ImmutableList<MediaItem>>> future = SettableFuture.create();
+        libraryExecutor.execute(() -> {
+            try {
+                SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                List<SupabaseApi.AutoEpisode> episodes = api.fetchSeriesEpisodes(seriesId, DEFAULT_PAGE_SIZE);
                 ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
                 for (SupabaseApi.AutoEpisode episode : episodes) {
                     MediaMetadata.Builder metadata = new MediaMetadata.Builder()
