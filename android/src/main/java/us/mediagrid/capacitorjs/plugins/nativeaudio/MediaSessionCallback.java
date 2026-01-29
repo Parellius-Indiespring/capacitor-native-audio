@@ -2,6 +2,7 @@ package us.mediagrid.capacitorjs.plugins.nativeaudio;
 
 import android.os.Bundle;
 import android.net.Uri;
+import android.util.Log;
 import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
@@ -35,6 +36,7 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
     private static final String NODE_EPISODES = "root/episodes";
     private static final String NODE_LOGIN = "root/login";
     private static final int DEFAULT_PAGE_SIZE = 50;
+    private static final String TAG = "MediaSessionCallback";
 
     private AudioPlayerService audioService;
     private final ExecutorService libraryExecutor = Executors.newSingleThreadExecutor();
@@ -222,7 +224,9 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         libraryExecutor.execute(() -> {
             try {
                 SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                Log.i(TAG, "fetchSeriesItems: requesting series");
                 List<SupabaseApi.AutoPlaylist> playlists = api.fetchSeries(DEFAULT_PAGE_SIZE);
+                Log.i(TAG, "fetchSeriesItems: got " + playlists.size());
                 ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
                 for (SupabaseApi.AutoPlaylist playlist : playlists) {
                     MediaMetadata.Builder metadata = new MediaMetadata.Builder()
@@ -257,7 +261,9 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         libraryExecutor.execute(() -> {
             try {
                 SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                Log.i(TAG, "fetchLatestEpisodes: requesting latest");
                 List<SupabaseApi.AutoEpisode> episodes = api.fetchLatestEpisodes(DEFAULT_PAGE_SIZE);
+                Log.i(TAG, "fetchLatestEpisodes: got " + episodes.size());
                 ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
                 for (SupabaseApi.AutoEpisode episode : episodes) {
                     MediaMetadata.Builder metadata = new MediaMetadata.Builder()
@@ -303,7 +309,9 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         libraryExecutor.execute(() -> {
             try {
                 SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                Log.i(TAG, "fetchSeriesEpisodes: " + seriesId);
                 List<SupabaseApi.AutoEpisode> episodes = api.fetchSeriesEpisodes(seriesId, DEFAULT_PAGE_SIZE);
+                Log.i(TAG, "fetchSeriesEpisodes: got " + episodes.size());
                 ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
                 for (SupabaseApi.AutoEpisode episode : episodes) {
                     MediaMetadata.Builder metadata = new MediaMetadata.Builder()

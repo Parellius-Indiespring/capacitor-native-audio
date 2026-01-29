@@ -266,6 +266,7 @@ public class AudioPlayerPlugin extends Plugin {
     public void setAutoLoginState(PluginCall call) {
         try {
             boolean isLoggedIn = call.getBoolean("isLoggedIn", false);
+            Log.i(TAG, "setAutoLoginState: " + isLoggedIn);
 
             initializeMediaController("setAutoLoginState", call, () -> {
                 Bundle extras = new Bundle();
@@ -309,6 +310,7 @@ public class AudioPlayerPlugin extends Plugin {
             String supabaseAnonKey = call.getString("supabaseAnonKey");
             String accessToken = call.getString("accessToken");
 
+            Log.i(TAG, "setAutoAuthConfig: url=" + (supabaseUrl != null) + ", anonKey=" + (supabaseAnonKey != null) + ", token=" + (accessToken != null));
             AutoAuthStore.save(getContext(), supabaseUrl, supabaseAnonKey, accessToken);
             call.resolve();
         } catch (Exception ex) {

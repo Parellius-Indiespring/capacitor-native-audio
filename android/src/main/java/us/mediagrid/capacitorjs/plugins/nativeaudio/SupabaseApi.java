@@ -1,6 +1,7 @@
 package us.mediagrid.capacitorjs.plugins.nativeaudio;
 
 import android.content.Context;
+import android.util.Log;
 import android.net.Uri;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SupabaseApi {
+    private static final String TAG = "SupabaseApi";
     private final Context context;
 
     public SupabaseApi(Context context) {
@@ -22,6 +24,7 @@ public class SupabaseApi {
     public List<AutoPlaylist> fetchSeries(int limit) throws Exception {
         AutoAuthConfig config = AutoAuthStore.load(context);
         if (config == null || !config.isValid()) {
+            Log.w(TAG, "fetchSeries: missing auth config");
             return new ArrayList<>();
         }
 
@@ -55,6 +58,7 @@ public class SupabaseApi {
     public List<AutoEpisode> fetchLatestEpisodes(int limit) throws Exception {
         AutoAuthConfig config = AutoAuthStore.load(context);
         if (config == null || !config.isValid()) {
+            Log.w(TAG, "fetchLatestEpisodes: missing auth config");
             return new ArrayList<>();
         }
 
@@ -92,6 +96,7 @@ public class SupabaseApi {
     public List<AutoEpisode> fetchSeriesEpisodes(String playlistId, int limit) throws Exception {
         AutoAuthConfig config = AutoAuthStore.load(context);
         if (config == null || !config.isValid()) {
+            Log.w(TAG, "fetchSeriesEpisodes: missing auth config");
             return new ArrayList<>();
         }
 
@@ -144,6 +149,7 @@ public class SupabaseApi {
             : connection.getErrorStream();
         String payload = readStream(stream);
         if (code < 200 || code >= 300) {
+            Log.e(TAG, "Supabase error " + code + " for " + urlString + ": " + payload);
             throw new RuntimeException("Supabase error " + code + ": " + payload);
         }
         return new JSONArray(payload);
