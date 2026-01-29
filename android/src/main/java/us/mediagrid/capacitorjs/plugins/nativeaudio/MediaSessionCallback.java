@@ -22,6 +22,12 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
 
     public static final String SET_AUDIO_SOURCES = "SetAudioSources";
     public static final String CREATE_PLAYER = "CreatePlayer";
+    private static final String EXTRA_IS_LOGGED_IN = "isLoggedIn";
+    private static final String ROOT_ID = "root";
+    private static final String NODE_SERIES = "root/series";
+    private static final String NODE_CONTINUE = "root/continue";
+    private static final String NODE_EPISODES = "root/episodes";
+    private static final String NODE_LOGIN = "root/login";
 
     private AudioPlayerService audioService;
 
@@ -75,9 +81,19 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         MediaSession.ControllerInfo browser,
         @Nullable LibraryParams params
     ) {
+        boolean loggedIn = isLoggedIn(session);
+        if (!loggedIn) {
+            MediaItem loginRoot = buildBrowsableItem(
+                NODE_LOGIN,
+                "Sign in on your phone",
+                "Open GH Player on your phone to continue"
+            );
+            return Futures.immediateFuture(LibraryResult.ofItem(loginRoot, params));
+        }
+
         MediaItem root =
             new MediaItem.Builder()
-                .setMediaId("root")
+                .setMediaId(ROOT_ID)
                 .setMediaMetadata(
                     new MediaMetadata.Builder()
                         .setTitle("GH Player")
@@ -96,6 +112,15 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         MediaSession.ControllerInfo browser,
         String mediaId
     ) {
+        if (NODE_LOGIN.equals(mediaId)) {
+            MediaItem loginRoot = buildBrowsableItem(
+                NODE_LOGIN,
+                "Sign in on your phone",
+                "Open GH Player on your phone to continue"
+            );
+            return Futures.immediateFuture(LibraryResult.ofItem(loginRoot, null));
+        }
+
         return Futures.immediateFuture(LibraryResult.ofError(LibraryResult.RESULT_ERROR_NOT_SUPPORTED));
     }
 
@@ -108,6 +133,20 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         @IntRange(from = 1) int pageSize,
         @Nullable LibraryParams params
     ) {
+        boolean loggedIn = isLoggedIn(session);
+        if (!loggedIn) {
+            return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
+        }
+
+        if (ROOT_ID.equals(parentId)) {
+            ImmutableList<MediaItem> items = ImmutableList.of(
+                buildBrowsableItem(NODE_SERIES, "Series", "Browse series"),
+                buildBrowsableItem(NODE_CONTINUE, "Continue Listening", "Pick up where you left off"),
+                buildBrowsableItem(NODE_EPISODES, "Episodes", "Latest episodes")
+            );
+            return Futures.immediateFuture(LibraryResult.ofItemList(items, params));
+        }
+
         return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
     }
 
@@ -131,5 +170,24 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         @Nullable LibraryParams params
     ) {
         return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
+    }
+
+    private boolean isLoggedIn(MediaLibrarySession session) {
+        Bundle extras = session.getSessionExtras();
+        return extras != null && extras.getBoolean(EXTRA_IS_LOGGED_IN, false);
+    }
+
+    private MediaItem buildBrowsableItem(String id, String title, String subtitle) {
+        return new MediaItem.Builder()
+            .setMediaId(id)
+            .setMediaMetadata(
+                new MediaMetadata.Builder()
+                    .setTitle(title)
+                    .setSubtitle(subtitle)
+                    .setIsBrowsable(true)
+                    .setIsPlayable(false)
+                    .build()
+            )
+            .build();
     }
 }
