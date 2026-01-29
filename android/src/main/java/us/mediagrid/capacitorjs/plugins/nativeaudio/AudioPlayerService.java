@@ -11,14 +11,15 @@ import androidx.media3.common.C;
 import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.session.MediaLibraryService;
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession;
 import androidx.media3.session.MediaSession;
-import androidx.media3.session.MediaSessionService;
 
-public class AudioPlayerService extends MediaSessionService {
+public class AudioPlayerService extends MediaLibraryService {
 
     private static final String TAG = "AudioPlayerService";
     public static final String PLAYBACK_CHANNEL_ID = "playback_channel";
-    private MediaSession mediaSession = null;
+    private MediaLibrarySession mediaSession = null;
 
     @Override
     public void onCreate() {
@@ -46,8 +47,7 @@ public class AudioPlayerService extends MediaSessionService {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build();
         player.setPlayWhenReady(false);
-        mediaSession = new MediaSession.Builder(this, player)
-            .setCallback(new MediaSessionCallback(this))
+        mediaSession = new MediaLibrarySession.Builder(this, player, new MediaSessionCallback(this))
             .setSessionActivity(sessionActivityPendingIntent)
             .build();
     }
