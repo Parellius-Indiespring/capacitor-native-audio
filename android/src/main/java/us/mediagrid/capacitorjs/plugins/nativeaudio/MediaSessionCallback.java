@@ -94,16 +94,6 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         MediaSession.ControllerInfo browser,
         @Nullable LibraryParams params
     ) {
-        boolean loggedIn = isLoggedIn(session);
-        if (!loggedIn) {
-            MediaItem loginRoot = buildBrowsableItem(
-                NODE_LOGIN,
-                "Sign in on your phone",
-                "Open GH Player on your phone to continue"
-            );
-            return Futures.immediateFuture(LibraryResult.ofItem(loginRoot, params));
-        }
-
         MediaItem root =
             new MediaItem.Builder()
                 .setMediaId(ROOT_ID)
@@ -148,7 +138,15 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
     ) {
         boolean loggedIn = isLoggedIn(session);
         if (!loggedIn) {
-            return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
+            Log.i(TAG, "onGetChildren: not logged in, showing login item");
+            ImmutableList<MediaItem> items = ImmutableList.of(
+                buildBrowsableItem(
+                    NODE_LOGIN,
+                    "Sign in on your phone",
+                    "Open GH Player on your phone to continue"
+                )
+            );
+            return Futures.immediateFuture(LibraryResult.ofItemList(items, params));
         }
 
         if (ROOT_ID.equals(parentId)) {
