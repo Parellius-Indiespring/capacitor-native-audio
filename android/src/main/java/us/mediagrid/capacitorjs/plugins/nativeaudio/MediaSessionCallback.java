@@ -1,6 +1,7 @@
 package us.mediagrid.capacitorjs.plugins.nativeaudio;
 
 import android.os.Bundle;
+import android.net.Uri;
 import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
@@ -17,6 +18,10 @@ import androidx.media3.session.SessionResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MediaSessionCallback implements MediaLibrarySession.Callback {
 
@@ -29,8 +34,10 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
     private static final String NODE_CONTINUE = "root/continue";
     private static final String NODE_EPISODES = "root/episodes";
     private static final String NODE_LOGIN = "root/login";
+    private static final int DEFAULT_PAGE_SIZE = 50;
 
     private AudioPlayerService audioService;
+    private final ExecutorService libraryExecutor = Executors.newSingleThreadExecutor();
 
     public MediaSessionCallback(AudioPlayerService audioService) {
         this.audioService = audioService;
@@ -151,6 +158,14 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
             return Futures.immediateFuture(LibraryResult.ofItemList(items, params));
         }
 
+        if (NODE_SERIES.equals(parentId)) {
+            return fetchSeriesItems(params);
+        }
+
+        if (NODE_EPISODES.equals(parentId)) {
+            return fetchLatestEpisodes(params);
+        }
+
         return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params));
     }
 
@@ -193,6 +208,86 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
                     .build()
             )
             .build();
+    }
+
+    private ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> fetchSeriesItems(
+        @Nullable LibraryParams params
+    ) {
+        SettableFuture<LibraryResult<ImmutableList<MediaItem>>> future = SettableFuture.create();
+        libraryExecutor.execute(() -> {
+            try {
+                SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                List<SupabaseApi.AutoPlaylist> playlists = api.fetchSeries(DEFAULT_PAGE_SIZE);
+                ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
+                for (SupabaseApi.AutoPlaylist playlist : playlists) {
+                    MediaMetadata.Builder metadata = new MediaMetadata.Builder()
+                        .setTitle(playlist.title)
+                        .setSubtitle(playlist.description)
+                        .setIsBrowsable(true)
+                        .setIsPlayable(false);
+
+                    if (playlist.imageUrl != null && !playlist.imageUrl.isEmpty()) {
+                        metadata.setArtworkUri(Uri.parse(playlist.imageUrl));
+                    }
+
+                    items.add(
+                        new MediaItem.Builder()
+                            .setMediaId("series/" + playlist.id)
+                            .setMediaMetadata(metadata.build())
+                            .build()
+                    );
+                }
+                future.set(LibraryResult.ofItemList(items.build(), params));
+            } catch (Exception ex) {
+                future.set(LibraryResult.ofError(LibraryResult.RESULT_ERROR_IO));
+            }
+        });
+        return future;
+    }
+
+    private ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> fetchLatestEpisodes(
+        @Nullable LibraryParams params
+    ) {
+        SettableFuture<LibraryResult<ImmutableList<MediaItem>>> future = SettableFuture.create();
+        libraryExecutor.execute(() -> {
+            try {
+                SupabaseApi api = new SupabaseApi(audioService.getApplicationContext());
+                List<SupabaseApi.AutoEpisode> episodes = api.fetchLatestEpisodes(DEFAULT_PAGE_SIZE);
+                ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
+                for (SupabaseApi.AutoEpisode episode : episodes) {
+                    MediaMetadata.Builder metadata = new MediaMetadata.Builder()
+                        .setTitle(episode.title)
+                        .setSubtitle(
+                            episode.podcastTitle != null && !episode.podcastTitle.isEmpty()
+                                ? episode.podcastTitle
+                                : "Goalhanger"
+                        )
+                        .setIsBrowsable(false)
+                        .setIsPlayable(true);
+
+                    String artwork = episode.imageUrl != null && !episode.imageUrl.isEmpty()
+                        ? episode.imageUrl
+                        : episode.podcastImageUrl;
+                    if (artwork != null && !artwork.isEmpty()) {
+                        metadata.setArtworkUri(Uri.parse(artwork));
+                    }
+
+                    MediaItem.Builder itemBuilder = new MediaItem.Builder()
+                        .setMediaId("episode/" + episode.id)
+                        .setMediaMetadata(metadata.build());
+
+                    if (episode.audioUrl != null && !episode.audioUrl.isEmpty()) {
+                        itemBuilder.setUri(Uri.parse(episode.audioUrl));
+                    }
+
+                    items.add(itemBuilder.build());
+                }
+                future.set(LibraryResult.ofItemList(items.build(), params));
+            } catch (Exception ex) {
+                future.set(LibraryResult.ofError(LibraryResult.RESULT_ERROR_IO));
+            }
+        });
+        return future;
     }
 
     private void updateSessionExtras(MediaLibrarySession session, Bundle extras) {

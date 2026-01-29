@@ -303,6 +303,20 @@ public class AudioPlayerPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void setAutoAuthConfig(PluginCall call) {
+        try {
+            String supabaseUrl = call.getString("supabaseUrl");
+            String supabaseAnonKey = call.getString("supabaseAnonKey");
+            String accessToken = call.getString("accessToken");
+
+            AutoAuthStore.save(getContext(), supabaseUrl, supabaseAnonKey, accessToken);
+            call.resolve();
+        } catch (Exception ex) {
+            call.reject("There was an issue setting auto auth config.", ex);
+        }
+    }
+
+    @PluginMethod
     public void updateMetadata(PluginCall call) {
         try {
             if (!audioSourceExists("updateMetadata", call)) {
