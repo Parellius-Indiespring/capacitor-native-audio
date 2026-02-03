@@ -1,4 +1,4 @@
-export interface AudioPlayerDefaultParams {
+﻿export interface AudioPlayerDefaultParams {
     /**
      * Any string to differentiate different audio files.
      *
@@ -180,6 +180,37 @@ export interface AudioPlayerMetadataUpdateListenerEvent {
     artwork_source: string;
 }
 
+export interface AutoAuthConfig {
+    /**
+     * Supabase project URL.
+     *
+     * @since 3.0.0
+     */
+    supabaseUrl: string;
+
+    /**
+     * Supabase anon/public key.
+     *
+     * @since 3.0.0
+     */
+    supabaseAnonKey: string;
+
+    /**
+     * Access token for the current user (or null).
+     *
+     * @since 3.0.0
+     */
+    accessToken: string | null;
+}
+
+export interface AutoLoginState {
+    /**
+     * Whether the user is logged in on the device.
+     *
+     * @since 3.0.0
+     */
+    isLoggedIn: boolean;
+}
 export interface AudioPlayerPlugin {
     /**
      * Create an audio source to be played.
@@ -374,4 +405,18 @@ export interface AudioPlayerPlugin {
         params: AudioPlayerListenerParams,
         callback: (result: AudioPlayerMetadataUpdateListenerEvent) => void,
     ): Promise<AudioPlayerListenerResult>;
+    /**
+     * Update Android Auto login state.
+     *
+     * @since 3.0.0
+     */
+    setAutoLoginState(params: AutoLoginState): Promise<void>;
+
+    /**
+     * Configure Android Auto Supabase auth for library browsing.
+     *
+     * @since 3.0.0
+     */
+    setAutoAuthConfig(params: AutoAuthConfig): Promise<void>;
 }
+

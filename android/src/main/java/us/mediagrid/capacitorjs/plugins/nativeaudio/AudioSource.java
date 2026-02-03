@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Binder;
 import android.util.Log;
+import com.getcapacitor.PluginCall;
 import androidx.media3.common.AudioAttributes;
 import androidx.media3.common.C;
 import androidx.media3.common.MediaItem;
@@ -27,6 +28,8 @@ public class AudioSource extends Binder {
     public String onPlaybackStatusChangeCallbackId;
     public String onReadyCallbackId;
     public String onEndCallbackId;
+    public String onSkipNextCallbackId;
+    public String onSkipPreviousCallbackId;
 
     private AudioPlayerPlugin pluginOwner;
 
@@ -166,8 +169,24 @@ public class AudioSource extends Binder {
         onEndCallbackId = callbackId;
     }
 
+    public void setOnSkipNext(String callbackId) {
+        onSkipNextCallbackId = callbackId;
+    }
+
+    public void setOnSkipPrevious(String callbackId) {
+        onSkipPreviousCallbackId = callbackId;
+    }
+
     public void setOnPlaybackStatusChange(String callbackId) {
         onPlaybackStatusChangeCallbackId = callbackId;
+    }
+
+    public void triggerSkipNext() {
+        triggerCallback(onSkipNextCallbackId);
+    }
+
+    public void triggerSkipPrevious() {
+        triggerCallback(onSkipPreviousCallbackId);
     }
 
     public boolean isPlaying() {
@@ -241,6 +260,20 @@ public class AudioSource extends Binder {
         }
     }
 
+    private void triggerCallback(String callbackId) {
+        if (callbackId == null) {
+            return;
+        }
+
+        PluginCall call = pluginOwner.getBridge().getSavedCall(callbackId);
+
+        if (call == null) {
+            return;
+        }
+
+        call.resolve();
+    }
+
     private void updateMetadata() {
         var currentMediaItem = getPlayer().getCurrentMediaItem();
         var newMediaItem = currentMediaItem
@@ -291,3 +324,7 @@ public class AudioSource extends Binder {
         return builder.build();
     }
 }
+
+
+
+

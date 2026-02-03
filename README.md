@@ -134,6 +134,8 @@ The update interval starts when the audio is played or un-paused and stops when 
 * [`onAudioEnd(...)`](#onaudioend)
 * [`onPlaybackStatusChange(...)`](#onplaybackstatuschange)
 * [`onMetadataUpdate(...)`](#onmetadataupdate)
+* [`setAutoLoginState(...)`](#setautologinstate)
+* [`setAutoAuthConfig(...)`](#setautoauthconfig)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -548,6 +550,40 @@ It will return all data from the URL response, not just the required data. So yo
 --------------------
 
 
+### setAutoLoginState(...)
+
+```typescript
+setAutoLoginState(params: AutoLoginState) => Promise<void>
+```
+
+Update Android Auto login state.
+
+| Param        | Type                                                      |
+| ------------ | --------------------------------------------------------- |
+| **`params`** | <code><a href="#autologinstate">AutoLoginState</a></code> |
+
+**Since:** 3.0.0
+
+--------------------
+
+
+### setAutoAuthConfig(...)
+
+```typescript
+setAutoAuthConfig(params: AutoAuthConfig) => Promise<void>
+```
+
+Configure Android Auto Supabase auth for library browsing.
+
+| Param        | Type                                                      |
+| ------------ | --------------------------------------------------------- |
+| **`params`** | <code><a href="#autoauthconfig">AutoAuthConfig</a></code> |
+
+**Since:** 3.0.0
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -600,5 +636,21 @@ It will return all data from the URL response, not just the required data. So yo
 | **`artist_name`**    | <code>string</code> | The artist name                                                           | 2.2.0 |
 | **`song_title`**     | <code>string</code> | The song title                                                            | 2.2.0 |
 | **`artwork_source`** | <code>string</code> | A URI for the album art image to display on the Android/iOS notification. | 2.2.0 |
+
+
+#### AutoLoginState
+
+| Prop             | Type                 | Description                                  | Since |
+| ---------------- | -------------------- | -------------------------------------------- | ----- |
+| **`isLoggedIn`** | <code>boolean</code> | Whether the user is logged in on the device. | 3.0.0 |
+
+
+#### AutoAuthConfig
+
+| Prop                  | Type                        | Description                                  | Since |
+| --------------------- | --------------------------- | -------------------------------------------- | ----- |
+| **`supabaseUrl`**     | <code>string</code>         | Supabase project URL.                        | 3.0.0 |
+| **`supabaseAnonKey`** | <code>string</code>         | Supabase anon/public key.                    | 3.0.0 |
+| **`accessToken`**     | <code>string \| null</code> | Access token for the current user (or null). | 3.0.0 |
 
 </docgen-api>

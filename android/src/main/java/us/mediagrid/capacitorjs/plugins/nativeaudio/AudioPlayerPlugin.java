@@ -269,16 +269,23 @@ public class AudioPlayerPlugin extends Plugin {
             Log.i(TAG, "setAutoLoginState: " + isLoggedIn);
 
             initializeMediaController("setAutoLoginState", call, () -> {
+                if (audioMediaController == null) {
+                    Log.e(TAG, "MediaController not available for setAutoLoginState");
+                    call.reject("There was an issue setting auto login state.");
+                    return;
+                }
+
                 Bundle extras = new Bundle();
                 extras.putBoolean("isLoggedIn", isLoggedIn);
+                extras.putBinder("audioSources", audioSources);
 
                 ListenableFuture<SessionResult> commandResult =
                     audioMediaController.sendCustomCommand(
                         new SessionCommand(
                             MediaSessionCallback.SET_LOGIN_STATE,
-                            extras
+                            Bundle.EMPTY
                         ),
-                        new Bundle()
+                        extras
                     );
 
                 commandResult.addListener(
@@ -289,9 +296,11 @@ public class AudioPlayerPlugin extends Plugin {
                             if (result.resultCode == SessionResult.RESULT_SUCCESS) {
                                 call.resolve();
                             } else {
+                                Log.e(TAG, "Failed to set auto login state. resultCode=" + result.resultCode);
                                 call.reject("Failed to set auto login state.");
                             }
                         } catch (Exception ex) {
+                            Log.e(TAG, "Failed to set auto login state.", ex);
                             call.reject("Failed to set auto login state.", ex);
                         }
                     },
@@ -300,6 +309,50 @@ public class AudioPlayerPlugin extends Plugin {
             });
         } catch (Exception ex) {
             call.reject("There was an issue setting auto login state.", ex);
+        }
+    }
+
+    @PluginMethod
+    public void setPlaylistState(PluginCall call) {
+        try {
+            boolean hasPlaylist = call.getBoolean("hasPlaylist", false);
+            int queueLength = call.getInt("queueLength", 0);
+
+            initializeMediaController("setPlaylistState", call, () -> {
+                Bundle extras = new Bundle();
+                extras.putBoolean("hasPlaylist", hasPlaylist);
+                extras.putInt("queueLength", queueLength);
+
+                ListenableFuture<SessionResult> commandResult =
+                    audioMediaController.sendCustomCommand(
+                        new SessionCommand(
+                            MediaSessionCallback.SET_PLAYLIST_STATE,
+                            Bundle.EMPTY
+                        ),
+                        extras
+                    );
+
+                commandResult.addListener(
+                    () -> {
+                        try {
+                            SessionResult result = commandResult.get();
+
+                            if (result.resultCode == SessionResult.RESULT_SUCCESS) {
+                                call.resolve();
+                            } else {
+                                Log.e(TAG, "Failed to set playlist state. resultCode=" + result.resultCode);
+                                call.reject("Failed to set playlist state.");
+                            }
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Failed to set playlist state.", ex);
+                            call.reject("Failed to set playlist state.", ex);
+                        }
+                    },
+                    MoreExecutors.directExecutor()
+                );
+            });
+        } catch (Exception ex) {
+            call.reject("There was an issue setting playlist state.", ex);
         }
     }
 
@@ -571,6 +624,29 @@ public class AudioPlayerPlugin extends Plugin {
     }
 
     @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
+    public void onSkipNext(PluginCall call) {
+        if (!audioSourceExists("onSkipNext", call)) {
+            return;
+        }
+
+        call.setKeepAlive(true);
+        getBridge().saveCall(call);
+
+        audioSources.get(audioId(call)).setOnSkipNext(call.getCallbackId());
+    }
+
+    @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
+    public void onSkipPrevious(PluginCall call) {
+        if (!audioSourceExists("onSkipPrevious", call)) {
+            return;
+        }
+
+        call.setKeepAlive(true);
+        getBridge().saveCall(call);
+
+        audioSources.get(audioId(call)).setOnSkipPrevious(call.getCallbackId());
+    }
+
     public void onPlaybackStatusChange(PluginCall call) {
         if (!audioSourceExists("onPlaybackStatusChange", call)) {
             return;
@@ -626,10 +702,31 @@ public class AudioPlayerPlugin extends Plugin {
         Log.i(TAG, "Initializing MediaController");
 
         if (audioMediaController != null) {
-            Log.i(TAG, "MediaController already initialized, running callback.");
-            callback.run();
-
-            return;
+            if (!audioMediaController.isConnected()) {
+                Log.w(TAG, "MediaController not connected, recreating.");
+                releaseMediaController();
+            } else {
+                Log.i(TAG, "MediaController already initialized, running callback.");
+                postToLooper(
+                    "initializeMediaController-callback",
+                    call,
+                    () -> {
+                        try {
+                            callback.run();
+                        } catch (Exception ex) {
+                            Log.e(TAG, "MediaController callback failed in method " + methodName, ex);
+                            call.reject(
+                                String.format(
+                                    "There was an issue running the MediaController callback in method %s",
+                                    methodName
+                                ),
+                                ex
+                            );
+                        }
+                    }
+                );
+                return;
+            }
         }
 
         postToLooper("initializeMediaController", call, () -> {
@@ -647,19 +744,23 @@ public class AudioPlayerPlugin extends Plugin {
                 () -> {
                     try {
                         audioMediaController = audioMediaControllerFuture.get();
-                        callback.run();
+                        postToLooper("initializeMediaController-callback", call, callback);
                     } catch (Exception ex) {
                         Log.e(TAG, "Couldn't get MediaController", ex);
-                        call.reject(
-                            String.format(
-                                "There was an issue initializing the MediaController in method %s",
-                                methodName
-                            ),
-                            ex
+                        postToLooper(
+                            "initializeMediaController-reject",
+                            call,
+                            () -> call.reject(
+                                String.format(
+                                    "There was an issue initializing the MediaController in method %s",
+                                    methodName
+                                ),
+                                ex
+                            )
                         );
                     }
                 },
-                MoreExecutors.directExecutor()
+                executorService
             );
         });
     }
@@ -761,3 +862,4 @@ public class AudioPlayerPlugin extends Plugin {
         });
     }
 }
+

@@ -1,4 +1,4 @@
-import { WebPlugin } from '@capacitor/core';
+﻿import { WebPlugin } from '@capacitor/core';
 
 import type {
     AudioPlayerDefaultParams,
@@ -7,6 +7,8 @@ import type {
     AudioPlayerMetadataUpdateListenerEvent,
     AudioPlayerPlugin,
     AudioPlayerPrepareParams,
+    AutoAuthConfig,
+    AutoLoginState,
 } from './definitions';
 
 export class AudioPlayerWeb extends WebPlugin implements AudioPlayerPlugin {
@@ -75,6 +77,13 @@ export class AudioPlayerWeb extends WebPlugin implements AudioPlayerPlugin {
         throw this.unimplemented('Not implemented on web.');
     }
 
+    setAutoLoginState(params: AutoLoginState): Promise<void> {
+        return Promise.resolve();
+    }
+
+    setAutoAuthConfig(params: AutoAuthConfig): Promise<void> {
+        return Promise.resolve();
+    }
     onAppGainsFocus(
         params: AudioPlayerListenerParams,
         callback: () => void,
@@ -117,3 +126,4 @@ export class AudioPlayerWeb extends WebPlugin implements AudioPlayerPlugin {
         throw this.unimplemented('Not implemented on web.');
     }
 }
+

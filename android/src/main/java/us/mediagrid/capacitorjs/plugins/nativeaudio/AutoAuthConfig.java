@@ -16,4 +16,13 @@ public class AutoAuthConfig {
             supabaseAnonKey != null && !supabaseAnonKey.isEmpty() &&
             accessToken != null && !accessToken.isEmpty();
     }
+
+    public boolean isValidForPublic() {
+        return supabaseUrl != null && !supabaseUrl.isEmpty() &&
+            supabaseAnonKey != null && !supabaseAnonKey.isEmpty();
+    }
+
+    public boolean isValidForAuth() {
+        return isValid();
+    }
 }
