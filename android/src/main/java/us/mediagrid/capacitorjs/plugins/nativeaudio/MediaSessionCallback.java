@@ -262,12 +262,7 @@ public class MediaSessionCallback implements MediaLibrarySession.Callback {
         }
 
         if (ROOT_ID.equals(parentId)) {
-            ImmutableList.Builder<MediaItem> items = ImmutableList.builder();
-            MediaItem nowPlaying = buildNowPlayingItem();
-            if (nowPlaying != null) {
-                items.add(nowPlaying);
-            }
-            items.add(
+            ImmutableList.Builder<MediaItem> items = ImmutableList.builder();items.add(
                 buildBrowsableItem(NODE_SERIES, "Series", "Browse series"),
                 buildBrowsableItem(NODE_CONTINUE, "Continue Listening", "Pick up where you left off"),
                 buildBrowsableItem(NODE_EPISODES, "Episodes", "Latest episodes")

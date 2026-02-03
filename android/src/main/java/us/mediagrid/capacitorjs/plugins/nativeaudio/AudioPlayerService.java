@@ -17,7 +17,6 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession;
 import androidx.media3.session.MediaSession;
 import androidx.media3.session.SessionCommand;
 import androidx.media3.session.CommandButton;
-import androidx.media3.session.MediaNotification;
 import com.google.common.collect.ImmutableList;
 
 public class AudioPlayerService extends MediaLibraryService {
@@ -91,12 +90,6 @@ public class AudioPlayerService extends MediaLibraryService {
             Log.e(TAG, "onGetSession failed", e);
             return mediaSession;
         }
-    }
-
-    @OptIn(markerClass = UnstableApi.class)
-    @Override
-    public MediaNotification.Provider getMediaNotificationProvider() {
-        return new GoalhangerNotificationProvider(getApplicationContext());
     }
 
     @Override
